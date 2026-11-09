@@ -28,50 +28,50 @@ $('setCustom').addEventListener('click',()=>{const h=Number($('customHours').val
 function localDateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function dateForPhrase(text,base){
  const t=text.toLowerCase(),d=new Date(base.getFullYear(),base.getMonth(),base.getDate());
- if(/\\bday after tom(?:orrow|m?)\\b/.test(t))d.setDate(d.getDate()+2);
- else if(/\\btom(?:orrow|m?)\\b/.test(t))d.setDate(d.getDate()+1);
- else if(/\\btoday\\b/.test(t)){}
+ if(/\bday after tom(?:orrow|m?)\b/.test(t))d.setDate(d.getDate()+2);
+ else if(/\btom(?:orrow|m?)\b/.test(t))d.setDate(d.getDate()+1);
+ else if(/\btoday\b/.test(t)){}
  else{
-  const inDays=t.match(/\\bin\\s+(\\d+)\\s+days?\\b/);if(inDays)d.setDate(d.getDate()+Number(inDays[1]));
+  const inDays=t.match(/\bin\s+(\d+)\s+days?\b/);if(inDays)d.setDate(d.getDate()+Number(inDays[1]));
   else{
    const months={january:0,february:1,march:2,april:3,may:4,june:5,july:6,august:7,september:8,october:9,november:10,december:11};
    const names=Object.keys(months).join('|');
-   const m=t.match(new RegExp('\\\\b(\\\\d{1,2})(?:st|nd|rd|th)?\\\\s+(?:of\\\\s+)?('+names+')(?:\\\\s+(\\\\d{4}))?\\\\b'))||t.match(new RegExp('\\\\b('+names+')\\\\s+(\\\\d{1,2})(?:st|nd|rd|th)?(?:,?\\\\s+(\\\\d{4}))?\\\\b'));
+   const m=t.match(new RegExp('\\b(\\d{1,2})(?:st|nd|rd|th)?\\s+(?:of\\s+)?('+names+')(?:\\s+(\\d{4}))?\\b'))||t.match(new RegExp('\\b('+names+')\\s+(\\d{1,2})(?:st|nd|rd|th)?(?:,?\\s+(\\d{4}))?\\b'));
    if(m){const month=months[m[1] in months?m[1]:m[2]],day=Number(m[1] in months?m[2]:m[1]),year=Number(m[3]||base.getFullYear());const candidate=new Date(year,month,day);if(candidate.getMonth()===month&&candidate.getDate()===day)return localDateKey(candidate)}
-   else{const days={sunday:0,monday:1,tuesday:2,wednesday:3,thursday:4,friday:5,saturday:6},w=t.match(/\\b(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\\b/);if(w){let n=(days[w[1]]-d.getDay()+7)%7;if(!n)n=7;d.setDate(d.getDate()+n)}}
+   else{const days={sunday:0,monday:1,tuesday:2,wednesday:3,thursday:4,friday:5,saturday:6},w=t.match(/\b(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/);if(w){let n=(days[w[1]]-d.getDay()+7)%7;if(!n)n=7;d.setDate(d.getDate()+n)}}
   }
  }
  return localDateKey(d)
 }
 function timeForPhrase(text){
- const t=text.toLowerCase();if(/\\bnoon\\b/.test(t))return '12:00';if(/\\bmidnight\\b/.test(t))return '00:00';
- let m=t.match(/\\b(?:at\\s*)?(\\d{1,2})(?::(\\d{2}))?\\s*(a\\.?m\\.?|p\\.?m\\.?)\\b/);
+ const t=text.toLowerCase();if(/\bnoon\b/.test(t))return '12:00';if(/\bmidnight\b/.test(t))return '00:00';
+ let m=t.match(/\b(?:at\s*)?(\d{1,2})(?::(\d{2}))?\s*(a\.?m\.?|p\.?m\.?)\b/);
  if(m){let h=+m[1],min=+(m[2]||0);if(h>0&&h<=12&&min<60){if(m[3][0]==='p'&&h!==12)h+=12;if(m[3][0]==='a'&&h===12)h=0;return String(h).padStart(2,'0')+':'+String(min).padStart(2,'0')}}
- m=t.match(/\\bat\\s+(\\d{1,2})(?::(\\d{2}))?\\b/);
+ m=t.match(/\bat\s+(\d{1,2})(?::(\d{2}))?\b/);
  if(m&&+m[1]<24&&+(m[2]||0)<60){let h=+m[1];if(h>=1&&h<=7)h+=12;return String(h).padStart(2,'0')+':'+String(+(m[2]||0)).padStart(2,'0')}
- m=t.match(/\\b(\\d{1,2}):(\\d{2})\\b/);if(m&&+m[1]<24&&+m[2]<60)return String(+m[1]).padStart(2,'0')+':'+m[2];return ''
+ m=t.match(/\b(\d{1,2}):(\d{2})\b/);if(m&&+m[1]<24&&+m[2]<60)return String(+m[1]).padStart(2,'0')+':'+m[2];return ''
 }
 function shortTitle(text){
- let s=text.toLowerCase().replace(/\\b(day after tom(?:orrow|m?)|tom(?:orrow|m?)|today)\\b/g,' ')
- .replace(/\\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\\b/g,' ')
- .replace(/\\b(january|february|march|april|may|june|july|august|september|october|november|december)\\s+\\d{1,2}(?:st|nd|rd|th)?\\b/g,' ')
- .replace(/\\b\\d{1,2}(?:st|nd|rd|th)?\\s+(?:of\\s+)?(january|february|march|april|may|june|july|august|september|october|november|december)\\b/g,' ')
- .replace(/\\b(?:at\\s*)?\\d{1,2}(?::\\d{2})?\\s*(?:a\\.?m\\.?|p\\.?m\\.?)\\b/g,' ')
- .replace(/\\bat\\s+\\d{1,2}(?::\\d{2})?\\b/g,' ').replace(/\\b\\d{1,2}:\\d{2}\\b/g,' ')
- .replace(/\\b(my|the|i have|i need to|i want to|need to|have to|remember to|please)\\b/g,' ')
- .replace(/\\bsisters\\b/g,'sister').replace(/\\s+/g,' ').trim();
- return (s||text).replace(/^\\w/,c=>c.toUpperCase())
+ let s=text.toLowerCase().replace(/\b(day after tom(?:orrow|m?)|tom(?:orrow|m?)|today)\b/g,' ')
+ .replace(/\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/g,' ')
+ .replace(/\b(january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2}(?:st|nd|rd|th)?\b/g,' ')
+ .replace(/\b\d{1,2}(?:st|nd|rd|th)?\s+(?:of\s+)?(january|february|march|april|may|june|july|august|september|october|november|december)\b/g,' ')
+ .replace(/\b(?:at\s*)?\d{1,2}(?::\d{2})?\s*(?:a\.?m\.?|p\.?m\.?)\b/g,' ')
+ .replace(/\bat\s+\d{1,2}(?::\d{2})?\b/g,' ').replace(/\b\d{1,2}:\d{2}\b/g,' ')
+ .replace(/\b(my|the|i have|i need to|i want to|need to|have to|remember to|please)\b/g,' ')
+ .replace(/\bsisters\b/g,'sister').replace(/\s+/g,' ').trim();
+ return (s||text).replace(/^\w/,c=>c.toUpperCase())
 }
 function splitBrainDump(raw){
- const pieces=raw.split(/\\n+|[;]+|(?<=[.!?])\\s+/).map(x=>x.trim()).filter(Boolean),out=[];
+ const pieces=raw.split(/\n+|[;]+|(?<=[.!?])\s+/).map(x=>x.trim()).filter(Boolean),out=[];
  for(const piece of pieces){
-  const matches=[...piece.matchAll(/\\b(?:day after tom(?:orrow|m?)|tom(?:orrow|m?)|today|in \\d+ days?|(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)|(?:\\d{1,2}(?:st|nd|rd|th)?\\s+(?:of\\s+)?(?:january|february|march|april|may|june|july|august|september|october|november|december)|(?:january|february|march|april|may|june|july|august|september|october|november|december)\\s+\\d{1,2}(?:st|nd|rd|th)?))\\b/gi)];
+  const matches=[...piece.matchAll(/\b(?:day after tom(?:orrow|m?)|tom(?:orrow|m?)|today|in \d+ days?|(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)|(?:\d{1,2}(?:st|nd|rd|th)?\s+(?:of\s+)?(?:january|february|march|april|may|june|july|august|september|october|november|december)|(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2}(?:st|nd|rd|th)?))\b/gi)];
   if(matches.length>1){
-   let cuts=[];for(let i=1;i<matches.length;i++){const between=piece.slice(matches[i-1].index,matches[i].index);const and=between.toLowerCase().lastIndexOf(' and ');if(and>=0)cuts.push(matches[i-1].index+and+1)}
-   if(cuts.length){let prev=0;for(const cut of cuts){const p=piece.slice(prev,cut).trim().replace(/\\band\\s*$/i,'').trim();if(p)out.push(p);prev=cut+1}const last=piece.slice(prev).trim();if(last)out.push(last);continue}
+   let cuts=[];for(let i=1;i<matches.length;i++){const between=piece.slice(matches[i-1].index,matches[i].index);const and=between.toLowerCase().lastIndexOf(' and ');if(and>=0)cuts.push(matches[i-1].index+and)}
+   if(cuts.length){let prev=0;for(const cut of cuts){const p=piece.slice(prev,cut).trim().replace(/\band\s*$/i,'').trim();if(p)out.push(p);prev=cut+5}const last=piece.slice(prev).trim();if(last)out.push(last);continue}
   }
-  const andParts=piece.split(/\\s+and\\s+/i);
-  if(andParts.length>1&&andParts.some(x=>/\\b(?:tom(?:orrow|m?)|today|day after tom(?:orrow|m?)|at \\d)/i.test(x)))out.push(...andParts.map(x=>x.trim()).filter(Boolean));
+  const andParts=piece.split(/\s+and\s+/i);
+  if(andParts.length>1&&andParts.some(x=>/\b(?:tom(?:orrow|m?)|today|day after tom(?:orrow|m?)|at \d)/i.test(x)))out.push(...andParts.map(x=>x.trim()).filter(Boolean));
   else out.push(piece)
  }
  return out
@@ -107,11 +107,11 @@ function renderDayAgenda(){
  const dayEvents=events.filter(e=>e.date===selectedCalendarDate);let html='';
  if(dayEvents.some(e=>!e.time))html+='<div class="all-day-row"><div class="time-label">All day</div><div class="slot-content">'+dayEvents.filter(e=>!e.time).map(e=>eventAgendaHTML(e)).join('')+'</div></div>';
  for(let hour=0;hour<24;hour++){const time=String(hour).padStart(2,'0')+':00',next=String(hour+1).padStart(2,'0')+':00',items=dayEvents.filter(e=>e.time&&e.time>=time&&(hour===23?e.time<='23:59':e.time<next)).sort((a,b)=>a.time.localeCompare(b.time)),label=new Date(2000,0,1,hour).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
- html+='<div class="time-slot"><div class="time-label">'+label+'</div><div class="slot-content">'+items.map(e=>eventAgendaHTML(e)).join('')+'<button class="slot-add" onclick="selectSlot(\\''+selectedCalendarDate+'\\',\\''+time+'\\')">＋ Add</button></div></div>'}
+ html+='<div class="time-slot"><div class="time-label">'+label+'</div><div class="slot-content">'+items.map(e=>eventAgendaHTML(e)).join('')+'<button class="slot-add" onclick="selectSlot(&quot;'+selectedCalendarDate+'&quot;,&quot;'+time+'&quot;)">＋ Add</button></div></div>'}
  $('dayAgenda').innerHTML=html
 }
 function eventAgendaHTML(e){
- return '<details class="slot-event"><summary>'+escapeHTML(e.title)+(e.time?'<span class="event-time">'+e.time+'</span>':'')+'</summary><div class="event-edit"><input id="edit-title-'+e.id+'" aria-label="Edit event title" value="'+escapeHTML(e.title)+'"><input id="edit-date-'+e.id+'" aria-label="Edit event date" type="date" value="'+e.date+'"><input id="edit-time-'+e.id+'" aria-label="Edit event time" type="time" value="'+(e.time||'')+'"><button class="btn" onclick="saveEventEdit(\\''+e.id+'\\')">Save</button></div></details>'
+ return '<details class="slot-event"><summary>'+escapeHTML(e.title)+(e.time?'<span class="event-time">'+e.time+'</span>':'')+'</summary><div class="event-edit"><input id="edit-title-'+e.id+'" aria-label="Edit event title" value="'+escapeHTML(e.title)+'"><input id="edit-date-'+e.id+'" aria-label="Edit event date" type="date" value="'+e.date+'"><input id="edit-time-'+e.id+'" aria-label="Edit event time" type="time" value="'+(e.time||'')+'"><button class="btn" onclick="saveEventEdit('+e.id+')">Save</button></div></details>'
 }
 function saveEventEdit(id){
  const e=events.find(x=>String(x.id)===String(id));if(!e)return;
