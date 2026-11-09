@@ -59,29 +59,49 @@ function timeForPhrase(text){
  m=t.match(/\b(\d{1,2}):(\d{2})\b/);if(m&&+m[1]<24&&+m[2]<60)return String(+m[1]).padStart(2,'0')+':'+m[2];return ''
 }
 function shortTitle(text){
- let s=text.toLowerCase().replace(/\bday after tom{1,2}or{1,2}ow\b|\bday after tom{1,2}\b|\btom{1,2}or{1,2}ow\b|\btom{1,2}\b|\btoday\b/g,' ')
- .replace(/\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/g,' ')
- .replace(/\b(january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2}(?:st|nd|rd|th)?\b/g,' ')
- .replace(/\b\d{1,2}(?:st|nd|rd|th)?\s+(?:of\s+)?(january|february|march|april|may|june|july|august|september|october|november|december)\b/g,' ')
- .replace(/\b(?:at\s*)?\d{1,2}(?::\d{2})?\s*(?:a\.?m\.?|p\.?m\.?)\b/g,' ')
- .replace(/\bat\s+\d{1,2}(?::\d{2})?\b/g,' ').replace(/\b\d{1,2}:\d{2}\b/g,' ')
- .replace(/\b(my|the|i have|i need to|i want to|need to|have to|remember to|please)\b/g,' ')
- .replace(/\bsisters\b/g,'sister').replace(/\s+/g,' ').trim();
- return (s||text).replace(/^\w/,c=>c.toUpperCase())
+ let s=text.toLowerCase()
+ .replace(/\b(?:day after tomorrow|tomorrow|today|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/g,' ')
+ .replace(/\b(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2}(?:st|nd|rd|th)?\b/g,' ')
+ .replace(/\b\d{1,2}(?:st|nd|rd|th)?\s+(?:of\s+)?(?:january|february|march|april|may|june|july|august|september|october|november|december)\b/g,' ')
+ .replace(/\b(?:at|by|around)?\s*\d{1,2}(?::\d{2})?\s*(?:a\.?m\.?|p\.?m\.?)\b/g,' ')
+ .replace(/\b(?:at|by|around)\s+\d{1,2}(?::\d{2})?\b/g,' ')
+ .replace(/\b\d{1,2}:\d{2}\b/g,' ')
+ .replace(/^(?:also|then|after lunch|after breakfast|in the morning|in the afternoon|in the evening)\s*,?\s*/,'')
+ .replace(/^(?:i need to|i have to|i want to|i should|i must|i'll|i will|i am going to|i have|we need to|we have to|we should|remember to|please)\s+/,'')
+ .replace(/\b(?:my|the)\b/g,' ')
+ .replace(/\bmathematics\b/g,'maths')
+ .replace(/\bmaths\b/g,'Maths')
+ .replace(/\bscience\b/g,'Sci.')
+ .replace(/\benglish\b/g,'Eng.')
+ .replace(/\bhomework\b/g,'HW')
+ .replace(/\brevision\b/g,'Rev.')
+ .replace(/\bassignment\b/g,'Assign.')
+ .replace(/\bproject\b/g,'Proj.')
+ .replace(/\bpreparation\b/g,'Prep')
+ .replace(/\bprepare\b/g,'Prep')
+ .replace(/\bgroup\b/g,'Grp.')
+ .replace(/\bmeeting\b/g,'Meet.')
+ .replace(/\bappointment\b/g,'Appt.')
+ .replace(/\s+/g,' ').replace(/^[,.\s]+|[,.\s]+$/g,'').trim();
+ s=s.replace(/^./,x=>x.toUpperCase());
+ return s || '';
+}
+function isPlanFragment(text){
+ const t=text.toLowerCase();
+ const action=/\b(?:wake(?:\s+up)?|get\s+ready|breakfast|lunch|dinner|eat|attend|go\s+to|study|revise|review|finish|complete|submit|work\s+on|call|meet|join|practice|practise|read|tidy|clean|pack|prep(?:are)?|organis[ez]e|buy|pick\s+up|drop\s+off|exercise|walk|class|lesson|lecture|meeting|appointment|deadline|homework|revision|exam|test|project|assignment|badminton|training|school|errand|visit)\b/.test(t);
+ const hasClock=/\b(?:at|by|around)\s+\d{1,2}(?::\d{2})?\b|\b\d{1,2}(?::\d{2})?\s*(?:a\.?m\.?|p\.?m\.?)\b|\bnoon\b|\bmidnight\b/.test(t);
+ return action || (hasClock && shortTitle(text).length>1);
 }
 function splitBrainDump(raw){
- const pieces=raw.split(/\n+|[;]+|(?<=[.!?])\s+/).map(x=>x.trim()).filter(Boolean),out=[];
- for(const piece of pieces){
-  const matches=[...piece.matchAll(/\b(?:day after tom{1,2}or{1,2}ow|day after tom{1,2}|tom{1,2}or{1,2}ow|tom{1,2}|today|in \d+ days?|(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)|(?:\d{1,2}(?:st|nd|rd|th)?\s+(?:of\s+)?(?:january|february|march|april|may|june|july|august|september|october|november|december)|(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2}(?:st|nd|rd|th)?))\b/gi)];
-  if(matches.length>1){
-   let cuts=[];for(let i=1;i<matches.length;i++){const between=piece.slice(matches[i-1].index,matches[i].index);const and=between.toLowerCase().lastIndexOf(' and ');if(and>=0)cuts.push(matches[i-1].index+and)}
-   if(cuts.length){let prev=0;for(const cut of cuts){const p=piece.slice(prev,cut).trim().replace(/\band\s*$/i,'').trim();if(p)out.push(p);prev=cut+5}const last=piece.slice(prev).trim();if(last)out.push(last);continue}
+ const sentences=raw.split(/\n+|[;]+|(?<=[.!?])\s+/).map(x=>x.trim()).filter(Boolean),out=[];
+ for(const sentence of sentences){
+  const clauses=sentence.split(/,\s*|\s+and\s+/i).map(x=>x.trim()).filter(Boolean);
+  for(const clause of clauses){
+   const cleaned=clause.replace(/^(?:and|also|then|after lunch|after breakfast|in the morning|in the afternoon|in the evening)\s*/i,'').trim();
+   if(cleaned && isPlanFragment(cleaned))out.push(cleaned);
   }
-  const andParts=piece.split(/\s+and\s+/i);
-  if(andParts.length>1&&andParts.some(x=>/\b(?:tom(?:orrow|m?)|today|day after tom(?:orrow|m?)|at \d)/i.test(x)))out.push(...andParts.map(x=>x.trim()).filter(Boolean));
-  else out.push(piece)
  }
- return out
+ return out;
 }
 let draft=[];
 function readableDate(key){const parts=key.split('-').map(Number);const d=new Date(parts[0],parts[1]-1,parts[2],12,0,0);return d.toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
@@ -92,8 +112,8 @@ function renderDraft(){
 }
 $('organizeBtn').addEventListener('click',()=>{
  const raw=$('brainInput').value.trim();if(!raw){$('brainInput').focus();return}
- const base=new Date();base.setHours(12,0,0,0);const items=splitBrainDump(raw);
- draft=items.map((part,i)=>({id:Date.now()+i+Math.random(),title:shortTitle(part),date:dateForPhrase(part,base),time:timeForPhrase(part)}));
+ const base=new Date();base.setHours(12,0,0,0);const items=splitBrainDump(raw);let activeDate=localDateKey(base);
+ draft=items.map((part,i)=>{if(/\b(?:tomorrow|today|day after tomorrow|in \d+ days?|monday|tuesday|wednesday|thursday|friday|saturday|sunday|january|february|march|april|may|june|july|august|september|october|november|december)\b/i.test(part)||/\b\d{1,2}(?:st|nd|rd|th)?\s+(?:of\s+)?(?:january|february|march|april|may|june|july|august|september|october|november|december)\b/i.test(part))activeDate=dateForPhrase(part,base);return {id:Date.now()+i+Math.random(),title:shortTitle(part),date:activeDate,time:timeForPhrase(part)}}).filter(d=>d.title);
  renderDraft();$('draftCard').scrollIntoView({behavior:'smooth',block:'start'});
 });
 $('approveDraft').addEventListener('click',()=>{
