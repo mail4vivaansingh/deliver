@@ -24,12 +24,66 @@ const now=new Date();$('today').textContent=now.toLocaleDateString(undefined,{we
 let selectedSeconds=25*60,remainingSeconds=selectedSeconds,interval=null;function paintClock(){const h=Math.floor(remainingSeconds/3600),m=Math.floor((remainingSeconds%3600)/60),s=remainingSeconds%60;$('clock').textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')}
 function chooseDuration(total){if(!Number.isInteger(total)||total<1||total>86400)return;const h=Math.floor(total/3600),m=Math.floor((total%3600)/60),s=total%60;const parts=[];if(h)parts.push(h+' hr');if(m)parts.push(m+' min');if(s)parts.push(s+' sec');$('timerMessage').textContent='Duration set to '+parts.join(' ')+'.';selectedSeconds=total;remainingSeconds=total;clearInterval(interval);interval=null;$('startTimer').textContent='Start focus';paintClock()}
 $('setCustom').addEventListener('click',()=>{const h=Number($('customHours').value),m=Number($('customMinutes').value),s=Number($('customSeconds').value);if(!Number.isInteger(h)||!Number.isInteger(m)||!Number.isInteger(s)||h<0||h>24||m<0||m>59||s<0||s>59||h*3600+m*60+s<1||h*3600+m*60+s>86400){$('timerMessage').textContent='Choose a duration between 1 second and 24 hours.';return}chooseDuration(h*3600+m*60+s)});$('startTimer').addEventListener('click',()=>{if(interval){clearInterval(interval);interval=null;$('startTimer').textContent='Resume';$('timerMessage').textContent='Paused. Take your time.';return}if(remainingSeconds<=0)remainingSeconds=selectedSeconds;$('startTimer').textContent='Pause';$('timerMessage').textContent='You are in focus mode.';interval=setInterval(()=>{remainingSeconds--;paintClock();if(remainingSeconds<=0){clearInterval(interval);interval=null;$('startTimer').textContent='Start again';$('timerMessage').textContent='Focus session complete. Nice work!';try{if('Notification'in window&&Notification.permission==='granted')new Notification('DELIVER focus session complete')}catch(e){}}},1000)});$('resetTimer').addEventListener('click',()=>{clearInterval(interval);interval=null;remainingSeconds=selectedSeconds;paintClock();$('startTimer').textContent='Start focus';$('timerMessage').textContent='Timer reset.'});paintClock();
-// Brain Dump turns notes into editable schedule entries. Approved entries are saved to the calendar.
-let draft=[];
-$('organizeBtn').addEventListener('click',()=>{const raw=$('brainInput').value.trim();if(!raw){$('brainInput').focus();return}draft=raw.split(/\n+|(?<=[.!?])\s+(?=[A-Z0-9])/).map(s=>s.trim().replace(/^[-•*\d.)\s]+/, '')).filter(s=>s.length>2).map((name,i)=>({id:i,name}));if(!draft.length)draft=[{id:0,name:raw}];$('draftCard').hidden=false;$('draftList').innerHTML=draft.map(d=>'<div class="schedule-row"><input aria-label="Schedule item" value="'+escapeHTML(d.name)+'" data-name="'+d.id+'"><input aria-label="Date" type="date" data-date="'+d.id+'" required><input aria-label="Time (optional)" type="time" data-time="'+d.id+'"></div>').join('');$('draftCard').scrollIntoView({behavior:'smooth',block:'start'})});
-$('approveDraft').addEventListener('click',()=>{const rows=[...$('draftList').querySelectorAll('.schedule-row')],additions=[];for(const row of rows){const title=row.querySelector('[data-name]').value.trim(),date=row.querySelector('[data-date]').value,time=row.querySelector('[data-time]').value;if(title&&!date){$('draftCard').querySelector('p').textContent='Please choose a date for each schedule item first.';return}if(title)additions.push({id:Date.now()+Math.random(),title,date,time})}events.push(...additions);save();$('draftCard').hidden=true;$('brainInput').value='';draft=[];showPage('calendar')});
-$('clearDraft').addEventListener('click',()=>{$('draftCard').hidden=true;draft=[]});
-
+// Brain Dump: detect dates and times from natural-language notes, then save directly to the calendar.
+function localDateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function inferredDate(text,base){
+ const t=text.toLowerCase(),d=new Date(base.getFullYear(),base.getMonth(),base.getDate());
+ if(/\\bday after tomorrow\\b/.test(t))d.setDate(d.getDate()+2);
+ else if(/\\btomorrow\\b/.test(t))d.setDate(d.getDate()+1);
+ else if(/\\btoday\\b/.test(t)){}
+ else {
+  const inDays=t.match(/\\bin\\s+(\\d+)\\s+days?\\b/);
+  if(inDays)d.setDate(d.getDate()+Number(inDays[1]));
+  else {
+   const months={january:0,february:1,march:2,april:3,may:4,june:5,july:6,august:7,september:8,october:9,november:10,december:11};
+   const monthNames=Object.keys(months).join('|');
+   const explicit=t.match(new RegExp('\\\\b(\\\\d{1,2})(?:st|nd|rd|th)?\\\\s+(?:of\\\\s+)?('+monthNames+')(?:\\\\s+(\\\\d{4}))?\\\\b')) ||
+    t.match(new RegExp('\\\\b('+monthNames+')\\\\s+(\\\\d{1,2})(?:st|nd|rd|th)?(?:,?\\\\s+(\\\\d{4}))?\\\\b'));
+   if(explicit){
+    const day=Number(explicit[1] in months?explicit[2]:explicit[1]);
+    const month=months[explicit[1] in months?explicit[1]:explicit[2]];
+    let year=Number(explicit[3]||explicit[2]||base.getFullYear());
+    if(!explicit[3] && explicit[1] in months)year=base.getFullYear();
+    if(!explicit[3] && !(explicit[1] in months) && month<base.getMonth())year++;
+    const candidate=new Date(year,month,day);
+    if(candidate.getMonth()===month&&candidate.getDate()===day)return localDateKey(candidate);
+   } else {
+    const weekdays={sunday:0,monday:1,tuesday:2,wednesday:3,thursday:4,friday:5,saturday:6};
+    const wd=t.match(/\\b(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\\b/);
+    if(wd){let delta=(weekdays[wd[1]]-d.getDay()+7)%7;if(delta===0)delta=7;d.setDate(d.getDate()+delta)}
+   }
+  }
+ }
+ return localDateKey(d);
+}
+function inferredTime(text){
+ const t=text.toLowerCase();
+ if(/\\bnoon\\b/.test(t))return '12:00';
+ if(/\\bmidnight\\b/.test(t))return '00:00';
+ let m=t.match(/\\b(?:at\\s*)?(\\d{1,2})(?::(\\d{2}))?\\s*(a\\.?m\\.?|p\\.?m\\.?)\\b/);
+ if(m){let h=Number(m[1]),min=Number(m[2]||0);if(h>=1&&h<=12&&min<60){if(m[3].startsWith('p')&&h!==12)h+=12;if(m[3].startsWith('a')&&h===12)h=0;return String(h).padStart(2,'0')+':'+String(min).padStart(2,'0')}}
+ m=t.match(/\\b(?:at\\s*)?(\\d{1,2}):(\\d{2})\\b/);
+ if(m&&Number(m[1])<24&&Number(m[2])<60)return String(Number(m[1])).padStart(2,'0')+':'+m[2];
+ return '';
+}
+$('organizeBtn').addEventListener('click',()=>{
+ const raw=$('brainInput').value.trim();if(!raw){$('brainInput').focus();return}
+ const base=new Date();
+ const parts=raw.split(/\\n+|[;]+|(?<=[.!?])\\s+|,\\s*(?=[A-Z])/).map(s=>s.trim().replace(/^[-•*\\d.)\\s]+/,'')).filter(s=>s.length>2);
+ const entries=(parts.length?parts:[raw]).map((description,i)=>({id:Date.now()+i+Math.random(),title:description,date:inferredDate(description,base),time:inferredTime(description)}));
+ events.push(...entries);
+ selectedCalendarDate=entries[0]?.date||localDateKey(base);
+ calendarCursor=new Date(selectedCalendarDate+'T12:00:00');calendarCursor.setDate(1);
+ save();
+ $('brainInput').value='';
+ $('draftCard').hidden=true;
+ $('draftList').innerHTML='';
+ $('organizeBtn').textContent='Saved to calendar ✓';
+ setTimeout(()=>{$('organizeBtn').textContent='Analyze & add to calendar'},1800);
+ showPage('calendar');
+});
+$('approveDraft').addEventListener('click',()=>{});
+$('clearDraft').addEventListener('click',()=>{$('draftCard').hidden=true});
 // Calendar month view and locally saved events.
 let calendarCursor=new Date();calendarCursor.setDate(1);let selectedCalendarDate=dateKey(new Date());
 function dateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
