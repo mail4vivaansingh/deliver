@@ -143,7 +143,7 @@ function renderDayAgenda(){
  $('dayAgenda').innerHTML=html
 }
 function eventAgendaHTML(e){
- return '<details class="slot-event"><summary>'+escapeHTML(e.title)+(e.time?'<span class="event-time">'+e.time+'</span>':'')+'</summary><div class="event-edit"><input id="edit-title-'+e.id+'" aria-label="Edit event title" value="'+escapeHTML(e.title)+'"><input id="edit-date-'+e.id+'" aria-label="Edit event date" type="date" value="'+e.date+'"><input id="edit-time-'+e.id+'" aria-label="Edit event time" type="time" value="'+(e.time||'')+'"><button class="btn" onclick="saveEventEdit('+e.id+')">Save</button></div></details>'
+ return '<details class="slot-event"><summary>'+escapeHTML(e.title)+(e.time?'<span class="event-time">'+e.time+'</span>':'')+'</summary><div class="event-edit"><input id="edit-title-'+e.id+'" aria-label="Edit event title" value="'+escapeHTML(e.title)+'"><input id="edit-date-'+e.id+'" aria-label="Edit event date" type="text" inputmode="numeric" placeholder="DD/MM/YYYY" value="'+formatDMY(e.date)+'"><input id="edit-time-'+e.id+'" aria-label="Edit event time" type="time" value="'+(e.time||'')+'"><button class="btn" onclick="saveEventEdit('+e.id+')">Save</button></div></details>'
 }
 function saveEventEdit(id){
  const e=events.find(x=>String(x.id)===String(id));if(!e)return;
