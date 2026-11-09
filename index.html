@@ -44,7 +44,7 @@ function inferredDate(text,base){
     const month=months[explicit[1] in months?explicit[1]:explicit[2]];
     let year=Number(explicit[3]||base.getFullYear());
     if(!explicit[3] && explicit[1] in months)year=base.getFullYear();
-    if(!explicit[3] && !(explicit[1] in months) && month<base.getMonth())year++;
+    if(!explicit[3] && month<base.getMonth())year++;
     const candidate=new Date(year,month,day);
     if(candidate.getMonth()===month&&candidate.getDate()===day)return localDateKey(candidate);
    } else {
@@ -69,7 +69,7 @@ function inferredTime(text){
 $('organizeBtn').addEventListener('click',()=>{
  const raw=$('brainInput').value.trim();if(!raw){$('brainInput').focus();return}
  const base=new Date();
- const parts=raw.split(/\n+|[;]+|(?<=[.!?])\s+|,\s*(?=[A-Z])/).map(s=>s.trim().replace(/^[-•*\d.)\s]+/,'')).filter(s=>s.length>2);
+ const parts=raw.split(/\n+|[;]+|(?<=[.!?])\s+|,\s*/).map(s=>s.trim().replace(/^[-•*\d.)\s]+/,'')).filter(s=>s.length>2);
  const entries=(parts.length?parts:[raw]).map((description,i)=>({id:Date.now()+i+Math.random(),title:description,date:inferredDate(description,base),time:inferredTime(description)}));
  events.push(...entries);
  selectedCalendarDate=entries[0]?.date||localDateKey(base);
