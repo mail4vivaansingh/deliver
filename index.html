@@ -7,7 +7,7 @@
 <section class="page" id="tasks"><div class="card"><div class="section-head"><h2>Your daily tasks</h2></div><form class="task-form" id="taskForm"><input id="taskInput" placeholder="Add a task..." required><button class="btn">Add</button></form><div id="taskList"></div></div></section>
 <section class="page" id="calendar"><div class="card"><div class="calendar-toolbar"><button class="btn secondary" id="prevMonth">←</button><h2 id="calendarMonth"></h2><button class="btn secondary" id="nextMonth">→</button></div><div class="calendar-grid" id="calendarWeekdays"></div><div class="calendar-grid" id="calendarDays"></div></div><div class="card day-agenda"><div class="agenda-heading"><h2 id="agendaDate">Daily time slots</h2><span class="muted">Select a slot to add an event</span></div><div id="dayAgenda"></div></div><div class="card section"><h2>Add to calendar</h2><form id="eventForm" class="task-form"><input id="eventTitle" placeholder="What is scheduled?" required><input id="eventDate" type="date" required><input id="eventTime" type="time"><button class="btn">Add event</button></form><div id="eventList"></div><p class="notice">Calendar events are saved in this browser on this device.</p></div></section>
 <section class="page" id="focus"><div class="card timer"><div class="eyebrow">FOCUS MODE</div><h2>One thing at a time.</h2><div class="clock" id="clock">00:25:00</div><p id="timerMessage">Choose a duration and begin.</p><div class="custom-time"><label for="customHours" class="muted">Hours</label><input id="customHours" type="number" min="0" max="24" value="0"><label for="customMinutes" class="muted">Minutes</label><input id="customMinutes" type="number" min="0" max="59" value="25"><label for="customSeconds" class="muted">Seconds</label><input id="customSeconds" type="number" min="0" max="59" value="0"><button class="btn secondary" id="setCustom">Set</button></div><div class="timer-actions"><button class="btn" id="startTimer">Start focus</button><button class="btn secondary" id="resetTimer">Reset</button></div></div></section>
-<section class="page" id="brain"><div class="card brain-intro"><div class="eyebrow">CLEAR YOUR MIND</div><h2>Tell me your plans. I'll help shape your schedule.</h2><p class="sub">Write everything down — school, work, errands, goals, deadlines, and all the little things. No need to organize it first.</p><div class="brain-area"><textarea id="brainInput" placeholder="For example: I have maths homework due Wednesday, need about an hour to study science, want to tidy my room, and I'd like to go for a walk tomorrow..."></textarea><div class="section-head" style="margin-top:12px"><span class="muted">Add as much or as little as you like.</span><button class="btn" id="organizeBtn">Analyze &amp; build schedule</button></div><p class="notice">Write your plans naturally. DELIVER will build an editable schedule draft with suggested dates and times. Review it here, make changes, then add it to your calendar.</p></div></div><div class="card section" id="draftCard" hidden><div class="section-head"><div><h2>Your draft plan</h2><p class="muted">Choose dates and times, then add the schedule to your calendar.</p></div><span class="pill">REVIEW FIRST</span></div><div id="draftList"></div><div class="section-head" style="margin-top:18px"><button class="btn secondary" id="clearDraft">Discard draft</button><button class="btn" id="approveDraft">Add schedule to calendar</button></div></div></section><footer>DELIVER · Less planning. More doing.</footer></main></div>
+<section class="page" id="brain"><div class="card brain-intro"><div class="eyebrow">CLEAR YOUR MIND</div><h2>Tell me your plans. I'll help shape your schedule.</h2><p class="sub">Write everything down — school, work, errands, goals, deadlines, and all the little things. No need to organize it first.</p><div class="brain-area"><textarea id="brainInput" placeholder="For example: I have maths homework due Wednesday, need about an hour to study science, want to tidy my room, and I'd like to go for a walk tomorrow..."></textarea><div class="section-head" style="margin-top:12px"><span class="muted">Add as much or as little as you like.</span><button class="btn" id="organizeBtn">Analyze &amp; build schedule</button></div><p class="notice">Write your plans naturally. Relative dates like “tomorrow” are calculated from the date shown at the top of DELIVER. Review each suggested date and time, edit anything needed, then add the schedule to your calendar.</p></div></div><div class="card section" id="draftCard" hidden><div class="section-head"><div><h2>Your draft plan</h2><p class="muted">Choose dates and times, then add the schedule to your calendar.</p></div><span class="pill">REVIEW FIRST</span></div><div id="draftList"></div><div class="section-head" style="margin-top:18px"><button class="btn secondary" id="clearDraft">Discard draft</button><button class="btn" id="approveDraft">Add schedule to calendar</button></div></div></section><footer>DELIVER · Less planning. More doing.</footer></main></div>
 <script>
 const $=id=>document.getElementById(id);const load=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))||fallback}catch{return fallback}};let tasks=load('deliver_tasks',[]),events=load('deliver_calendar_events',[]);
 function save(){localStorage.setItem('deliver_tasks',JSON.stringify(tasks));localStorage.setItem('deliver_calendar_events',JSON.stringify(events));render();renderCalendar()}
@@ -27,20 +27,25 @@ $('setCustom').addEventListener('click',()=>{const h=Number($('customHours').val
 // Brain Dump creates a reviewable schedule draft. Nothing is saved until the user approves it.
 function localDateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function dateForPhrase(text,base){
- const t=text.toLowerCase(),d=new Date(base.getFullYear(),base.getMonth(),base.getDate());
- if(/\bday after tom(?:orrow|m?)\b/.test(t))d.setDate(d.getDate()+2);
- else if(/\btom(?:orrow|m?)\b/.test(t))d.setDate(d.getDate()+1);
- else if(/\btoday\b/.test(t)){}
- else{
-  const inDays=t.match(/\bin\s+(\d+)\s+days?\b/);if(inDays)d.setDate(d.getDate()+Number(inDays[1]));
-  else{
-   const months={january:0,february:1,march:2,april:3,may:4,june:5,july:6,august:7,september:8,october:9,november:10,december:11};
-   const names=Object.keys(months).join('|');
-   const m=t.match(new RegExp('\\b(\\d{1,2})(?:st|nd|rd|th)?\\s+(?:of\\s+)?('+names+')(?:\\s+(\\d{4}))?\\b'))||t.match(new RegExp('\\b('+names+')\\s+(\\d{1,2})(?:st|nd|rd|th)?(?:,?\\s+(\\d{4}))?\\b'));
-   if(m){const month=months[m[1] in months?m[1]:m[2]],day=Number(m[1] in months?m[2]:m[1]),year=Number(m[3]||base.getFullYear());const candidate=new Date(year,month,day);if(candidate.getMonth()===month&&candidate.getDate()===day)return localDateKey(candidate)}
-   else{const days={sunday:0,monday:1,tuesday:2,wednesday:3,thursday:4,friday:5,saturday:6},w=t.match(/\b(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/);if(w){let n=(days[w[1]]-d.getDay()+7)%7;if(!n)n=7;d.setDate(d.getDate()+n)}}
-  }
+ const t=text.toLowerCase().replace(/\\s+/g,' ').trim();
+ const d=new Date(base.getFullYear(),base.getMonth(),base.getDate(),12,0,0);
+ // Check the longer relative phrase first so "day after tomorrow" can never be read as just "tomorrow".
+ if(/\\bday after tomorrow\\b|\\bday after tomm?\\b/.test(t)){d.setDate(d.getDate()+2);return localDateKey(d)}
+ if(/\\btomorrow\\b|\\btomm?\\b/.test(t)){d.setDate(d.getDate()+1);return localDateKey(d)}
+ if(/\\btoday\\b/.test(t))return localDateKey(d);
+ const inDays=t.match(/\\bin\\s+(\\d+)\\s+days?\\b/);
+ if(inDays){d.setDate(d.getDate()+Number(inDays[1]));return localDateKey(d)}
+ const months={january:0,february:1,march:2,april:3,may:4,june:5,july:6,august:7,september:8,october:9,november:10,december:11};
+ const names=Object.keys(months).join('|');
+ const m=t.match(new RegExp('\\\\b(\\\\d{1,2})(?:st|nd|rd|th)?\\\\s+(?:of\\\\s+)?('+names+')(?:\\\\s+(\\\\d{4}))?\\\\b'))||t.match(new RegExp('\\\\b('+names+')\\\\s+(\\\\d{1,2})(?:st|nd|rd|th)?(?:,?\\\\s+(\\\\d{4}))?\\\\b'));
+ if(m){
+  const month=months[m[1] in months?m[1]:m[2]],day=Number(m[1] in months?m[2]:m[1]),year=Number(m[3]||base.getFullYear());
+  const candidate=new Date(year,month,day,12,0,0);
+  if(candidate.getFullYear()===year&&candidate.getMonth()===month&&candidate.getDate()===day)return localDateKey(candidate);
  }
+ const weekdays={sunday:0,monday:1,tuesday:2,wednesday:3,thursday:4,friday:5,saturday:6};
+ const w=t.match(/\\b(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\\b/);
+ if(w){let delta=(weekdays[w[1]]-d.getDay()+7)%7;if(!delta)delta=7;d.setDate(d.getDate()+delta)}
  return localDateKey(d)
 }
 function timeForPhrase(text){
@@ -83,7 +88,7 @@ function renderDraft(){
 }
 $('organizeBtn').addEventListener('click',()=>{
  const raw=$('brainInput').value.trim();if(!raw){$('brainInput').focus();return}
- const base=new Date(),items=splitBrainDump(raw);
+ const base=new Date();base.setHours(12,0,0,0);const items=splitBrainDump(raw);
  draft=items.map((part,i)=>({id:Date.now()+i+Math.random(),title:shortTitle(part),date:dateForPhrase(part,base),time:timeForPhrase(part)}));
  renderDraft();$('draftCard').scrollIntoView({behavior:'smooth',block:'start'});
 });
