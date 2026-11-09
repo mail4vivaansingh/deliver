@@ -30,8 +30,8 @@ function localDateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padSt
 function dateForPhrase(text,base){
  const t=text.toLowerCase().replace(/\s+/g,' ').trim();
  const d=new Date(base.getFullYear(),base.getMonth(),base.getDate(),12,0,0);
- if(/\bday after tomorrow\b|\bday after tomm?\b/.test(t)){d.setDate(d.getDate()+2);return localDateKey(d)}
- if(/\btomorrow\b|\btomm?\b/.test(t)){d.setDate(d.getDate()+1);return localDateKey(d)}
+ if(/\bday after tom{1,2}or{1,2}ow\b|\bday after tom{1,2}\b/.test(t)){d.setDate(d.getDate()+2);return localDateKey(d)}
+ if(/\btom{1,2}or{1,2}ow\b|\btom{1,2}\b/.test(t)){d.setDate(d.getDate()+1);return localDateKey(d)}
  if(/\btoday\b/.test(t))return localDateKey(d);
  const inDays=t.match(/\bin\s+(\d+)\s+days?\b/);
  if(inDays){d.setDate(d.getDate()+Number(inDays[1]));return localDateKey(d)}
