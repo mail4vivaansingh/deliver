@@ -5,7 +5,7 @@
 </style></head><body><div class="app"><aside><div class="logo">DELIVER.</div><div class="tag">LESS PLANNING. MORE DOING.</div><nav class="nav"><button class="active" data-page="dashboard">◫ &nbsp; Dashboard</button><button data-page="tasks">☷ &nbsp; Daily Tasks</button><button data-page="calendar">▦ &nbsp; Calendar</button><button data-page="focus">◷ &nbsp; Focus</button><button data-page="brain">✦ &nbsp; Brain Dump</button></nav><div class="sidebar-bottom">Make today count.</div></aside><main><div class="top"><div><div class="eyebrow">YOUR SPACE. YOUR PACE.</div><h1 id="greeting">Welcome back.</h1><div class="sub">A little progress is still progress.</div></div><div class="date" id="today"></div></div>
 <section class="page active" id="dashboard"><div class="grid"><div class="card"><div class="stat-label">Tasks completed</div><div class="stat" id="completedStat">0</div></div><div class="card"><div class="stat-label">Tasks remaining</div><div class="stat" id="remainingStat">0</div></div><div class="card"><div class="stat-label">⚡ Rewards earned</div><div class="stat" id="starStat">0</div></div></div><div class="section two"><div class="card"><div class="section-head"><h2>Today's daily tasks</h2><button class="btn secondary" onclick="showPage('tasks')">View all</button></div><div id="dashboardTasks"></div></div><div class="card"><h2>Daily progress</h2><div class="stat" id="progressText">0%</div><div class="progress"><div id="progressBar"></div></div><p class="sub">Keep moving at your own pace.</p></div></div><div class="section card"><div class="section-head"><h2>Quick add</h2></div><form class="task-form" id="quickForm"><input id="quickInput" placeholder="What's on your mind?" required><button class="btn">Add task</button></form></div></section>
 <section class="page" id="tasks"><div class="card"><div class="section-head"><h2>Your daily tasks</h2></div><form class="task-form" id="taskForm"><input id="taskInput" placeholder="Add a task..." required><button class="btn">Add</button></form><div id="taskList"></div></div></section>
-<section class="page" id="calendar"><div class="card"><div class="calendar-toolbar"><button class="btn secondary" id="prevMonth">←</button><h2 id="calendarMonth"></h2><button class="btn secondary" id="nextMonth">→</button></div><div class="calendar-grid" id="calendarWeekdays"></div><div class="calendar-grid" id="calendarDays"></div></div><div class="card day-agenda"><div class="agenda-heading"><h2 id="agendaDate">Daily time slots</h2><span class="muted">Select a slot to add an event</span></div><div id="dayAgenda"></div></div><div class="card section"><h2>Add to calendar</h2><form id="eventForm" class="task-form"><input id="eventTitle" placeholder="What is scheduled?" required><input id="eventDate" type="date" required><input id="eventTime" type="time"><button class="btn">Add event</button></form><div id="eventList"></div><p class="notice">Calendar events are saved in this browser on this device.</p></div></section>
+<section class="page" id="calendar"><div class="card"><div class="calendar-toolbar"><button class="btn secondary" id="prevMonth">←</button><h2 id="calendarMonth"></h2><button class="btn secondary" id="nextMonth">→</button></div><div class="calendar-grid" id="calendarWeekdays"></div><div class="calendar-grid" id="calendarDays"></div></div><div class="card day-agenda"><div class="agenda-heading"><h2 id="agendaDate">Daily time slots</h2><span class="muted">Choose an action for this day</span></div><div class="task-form" style="margin:12px 0"><select id="dayAction" aria-label="Day actions"><option value="">Choose an action…</option><option value="add">Add event</option><option value="rename">Rename an event</option><option value="edit">Edit event details</option><option value="delete">Delete an event</option></select><select id="dayActionEvent" aria-label="Choose event" hidden></select><button class="btn secondary" id="dayActionGo" type="button">Continue</button></div><div id="dayActionEditor" hidden></div><div id="dayAgenda"></div></div><div class="card section"><h2>Add to calendar</h2><form id="eventForm" class="task-form"><input id="eventTitle" placeholder="What is scheduled?" required><input id="eventDate" type="date" required><input id="eventTime" type="time"><button class="btn">Add event</button></form><div id="eventList"></div><p class="notice">Calendar events are saved in this browser on this device.</p></div></section>
 <section class="page" id="focus"><div class="card timer"><div class="eyebrow">FOCUS MODE</div><h2>One thing at a time.</h2><div class="clock" id="clock">00:25:00</div><p id="timerMessage">Choose a duration and begin.</p><div class="custom-time"><label for="customHours" class="muted">Hours</label><input id="customHours" type="number" min="0" max="24" value="0"><label for="customMinutes" class="muted">Minutes</label><input id="customMinutes" type="number" min="0" max="59" value="25"><label for="customSeconds" class="muted">Seconds</label><input id="customSeconds" type="number" min="0" max="59" value="0"><button class="btn secondary" id="setCustom">Set</button></div><div class="timer-actions"><button class="btn" id="startTimer">Start focus</button><button class="btn secondary" id="resetTimer">Reset</button></div></div></section>
 <section class="page" id="brain"><div class="card brain-intro"><div class="eyebrow">CLEAR YOUR MIND</div><h2>Tell me your plans. I'll help shape your schedule.</h2><p class="sub">Write everything down — school, work, errands, goals, deadlines, and all the little things. No need to organize it first.</p><div class="brain-area"><textarea id="brainInput" placeholder="For example: I have maths homework due Wednesday, need about an hour to study science, want to tidy my room, and I'd like to go for a walk tomorrow..."></textarea><div class="section-head" style="margin-top:12px"><span class="muted">Add as much or as little as you like.</span><button class="btn" id="organizeBtn">Analyze &amp; build schedule</button></div><p class="notice">Write your plans naturally. Relative dates like “tomorrow” are calculated from the date shown at the top of DELIVER. Review each suggested date and time, edit anything needed, then add the schedule to your calendar.</p></div></div><div class="card section" id="draftCard" hidden><div class="section-head"><div><h2>Your draft plan</h2><p class="muted">Choose dates and times, then add the schedule to your calendar.</p></div><span class="pill">REVIEW FIRST</span></div><div id="draftList"></div><div class="section-head" style="margin-top:18px"><button class="btn secondary" id="clearDraft">Discard draft</button><button class="btn" id="approveDraft">Add schedule to calendar</button></div></div></section><footer>DELIVER · Less planning. More doing.</footer></main></div>
 <script>
@@ -27,24 +27,23 @@ $('setCustom').addEventListener('click',()=>{const h=Number($('customHours').val
 // Brain Dump creates a reviewable schedule draft. Nothing is saved until the user approves it.
 function localDateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function dateForPhrase(text,base){
- const t=text.toLowerCase().replace(/\\s+/g,' ').trim();
+ const t=text.toLowerCase().replace(/\s+/g,' ').trim();
  const d=new Date(base.getFullYear(),base.getMonth(),base.getDate(),12,0,0);
- // Check the longer relative phrase first so "day after tomorrow" can never be read as just "tomorrow".
- if(/\\bday after tomorrow\\b|\\bday after tomm?\\b/.test(t)){d.setDate(d.getDate()+2);return localDateKey(d)}
- if(/\\btomorrow\\b|\\btomm?\\b/.test(t)){d.setDate(d.getDate()+1);return localDateKey(d)}
- if(/\\btoday\\b/.test(t))return localDateKey(d);
- const inDays=t.match(/\\bin\\s+(\\d+)\\s+days?\\b/);
+ if(/\bday after tomorrow\b|\bday after tomm?\b/.test(t)){d.setDate(d.getDate()+2);return localDateKey(d)}
+ if(/\btomorrow\b|\btomm?\b/.test(t)){d.setDate(d.getDate()+1);return localDateKey(d)}
+ if(/\btoday\b/.test(t))return localDateKey(d);
+ const inDays=t.match(/\bin\s+(\d+)\s+days?\b/);
  if(inDays){d.setDate(d.getDate()+Number(inDays[1]));return localDateKey(d)}
  const months={january:0,february:1,march:2,april:3,may:4,june:5,july:6,august:7,september:8,october:9,november:10,december:11};
  const names=Object.keys(months).join('|');
- const m=t.match(new RegExp('\\\\b(\\\\d{1,2})(?:st|nd|rd|th)?\\\\s+(?:of\\\\s+)?('+names+')(?:\\\\s+(\\\\d{4}))?\\\\b'))||t.match(new RegExp('\\\\b('+names+')\\\\s+(\\\\d{1,2})(?:st|nd|rd|th)?(?:,?\\\\s+(\\\\d{4}))?\\\\b'));
+ const m=t.match(new RegExp('\\b(\\d{1,2})(?:st|nd|rd|th)?\\s+(?:of\\s+)?('+names+')(?:\\s+(\\d{4}))?\\b'))||t.match(new RegExp('\\b('+names+')\\s+(\\d{1,2})(?:st|nd|rd|th)?(?:,?\\s+(\\d{4}))?\\b'));
  if(m){
   const month=months[m[1] in months?m[1]:m[2]],day=Number(m[1] in months?m[2]:m[1]),year=Number(m[3]||base.getFullYear());
   const candidate=new Date(year,month,day,12,0,0);
   if(candidate.getFullYear()===year&&candidate.getMonth()===month&&candidate.getDate()===day)return localDateKey(candidate);
  }
  const weekdays={sunday:0,monday:1,tuesday:2,wednesday:3,thursday:4,friday:5,saturday:6};
- const w=t.match(/\\b(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\\b/);
+ const w=t.match(/\b(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/);
  if(w){let delta=(weekdays[w[1]]-d.getDay()+7)%7;if(!delta)delta=7;d.setDate(d.getDate()+delta)}
  return localDateKey(d)
 }
@@ -106,6 +105,29 @@ let calendarCursor=new Date();calendarCursor.setDate(1);let selectedCalendarDate
 function dateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function renderCalendar(){if(!$('calendarDays'))return;const year=calendarCursor.getFullYear(),month=calendarCursor.getMonth();$('calendarMonth').textContent=calendarCursor.toLocaleDateString(undefined,{month:'long',year:'numeric'});$('calendarWeekdays').innerHTML=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(x=>'<div class="calendar-weekday">'+x+'</div>').join('');const first=new Date(year,month,1),startDay=new Date(year,month,1-first.getDay()),today=dateKey(new Date());let html='';for(let i=0;i<42;i++){const d=new Date(startDay);d.setDate(startDay.getDate()+i);const key=dateKey(d),items=events.filter(e=>e.date===key).sort((a,b)=>(a.time||'').localeCompare(b.time||''));html+='<div role="button" tabindex="0" onclick="selectCalendarDay(\''+key+'\')" class="calendar-day '+(d.getMonth()!==month?'muted-day ':'')+(key===today?'today ':'')+(key===selectedCalendarDate?'selected':'')+'"><div class="calendar-day-num">'+d.getDate()+'</div>'+items.slice(0,3).map(e=>'<div class="calendar-event">'+(e.time?e.time+' ':'')+escapeHTML(e.title)+'</div>').join('')+(items.length>3?'<div class="calendar-day-num">+'+(items.length-3)+' more</div>':'')+'</div>'}$('calendarDays').innerHTML=html;renderDayAgenda();const upcoming=events.filter(e=>e.date>=today).sort((a,b)=>(a.date+(a.time||'')).localeCompare(b.date+(b.time||''))).slice(0,10);$('eventList').innerHTML=upcoming.length?upcoming.map(e=>'<div class="task"><span class="task-name">'+escapeHTML(e.title)+'</span><span class="muted">'+e.date+(e.time?' · '+e.time:'')+'</span><button class="delete" aria-label="Delete event" onclick="deleteEvent('+JSON.stringify(e.id)+')">×</button></div>').join(''):'<div class="empty">No upcoming events yet.</div>'}
 function selectCalendarDay(key){selectedCalendarDate=key;$('eventDate').value=key;renderCalendar()}
+function refreshDayActionOptions(){
+ const action=$('dayAction').value, picker=$('dayActionEvent'),dayEvents=events.filter(e=>e.date===selectedCalendarDate);
+ picker.innerHTML=dayEvents.map(e=>'<option value="'+String(e.id)+'">'+escapeHTML(e.title)+' · '+(e.time||'All day')+'</option>').join('');
+ picker.hidden=!(action==='rename'||action==='edit'||action==='delete');
+ $('dayActionEditor').hidden=true;$('dayActionEditor').innerHTML='';
+}
+$('dayAction').addEventListener('change',refreshDayActionOptions);
+$('dayActionGo').addEventListener('click',()=>{
+ const action=$('dayAction').value,editor=$('dayActionEditor'),id=$('dayActionEvent').value,e=events.find(x=>String(x.id)===id);
+ if(action==='add'){ $('eventDate').value=selectedCalendarDate;$('eventTitle').focus();$('eventTitle').placeholder='Add an event for this day';return}
+ if(!action)return;
+ if(!e){editor.hidden=false;editor.textContent='There are no events on this day yet.';return}
+ if(action==='delete'){events=events.filter(x=>String(x.id)!==id);save();refreshDayActionOptions();return}
+ editor.hidden=false;
+ if(action==='rename'){
+  editor.innerHTML='<div class="task-form"><input id="dayRenameTitle" aria-label="New event name" value="'+escapeHTML(e.title)+'"><button class="btn" type="button" id="dayRenameSave">Save name</button></div>';
+  $('dayRenameSave').onclick=()=>{const title=$('dayRenameTitle').value.trim();if(!title)return;e.title=title;save();refreshDayActionOptions()};
+ }else{
+  editor.innerHTML='<div class="event-edit"><input id="dayEditTitle" aria-label="Event title" value="'+escapeHTML(e.title)+'"><input id="dayEditDate" aria-label="Event date" type="date" value="'+e.date+'"><input id="dayEditTime" aria-label="Event time" type="time" value="'+(e.time||'')+'"><button class="btn" type="button" id="dayEditSave">Save</button></div>';
+  $('dayEditSave').onclick=()=>{const title=$('dayEditTitle').value.trim(),date=$('dayEditDate').value;if(!title||!date)return;e.title=title;e.date=date;e.time=$('dayEditTime').value;selectedCalendarDate=date;calendarCursor=new Date(date+'T12:00:00');calendarCursor.setDate(1);save();refreshDayActionOptions()};
+ }
+});
+
 function selectSlot(key,time){selectedCalendarDate=key;$('eventDate').value=key;$('eventTime').value=time;$('eventTitle').focus();$('eventTitle').placeholder='Add event at '+time}
 function renderDayAgenda(){
  const date=new Date(selectedCalendarDate+'T12:00:00');$('agendaDate').textContent=date.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
