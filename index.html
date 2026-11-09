@@ -7,7 +7,7 @@
 <section class="page" id="tasks"><div class="card"><div class="section-head"><h2>Your daily tasks</h2></div><form class="task-form" id="taskForm"><input id="taskInput" placeholder="Add a task..." required><button class="btn">Add</button></form><div id="taskList"></div></div></section>
 <section class="page" id="calendar"><div class="card"><div class="calendar-toolbar"><button class="btn secondary" id="prevMonth">←</button><h2 id="calendarMonth"></h2><button class="btn secondary" id="nextMonth">→</button></div><div class="calendar-grid" id="calendarWeekdays"></div><div class="calendar-grid" id="calendarDays"></div></div><div class="card day-agenda"><div class="agenda-heading"><h2 id="agendaDate">Daily time slots</h2><span class="muted">Select a slot to add an event</span></div><div id="dayAgenda"></div></div><div class="card section"><h2>Add to calendar</h2><form id="eventForm" class="task-form"><input id="eventTitle" placeholder="What is scheduled?" required><input id="eventDate" type="date" required><input id="eventTime" type="time"><button class="btn">Add event</button></form><div id="eventList"></div><p class="notice">Calendar events are saved in this browser on this device.</p></div></section>
 <section class="page" id="focus"><div class="card timer"><div class="eyebrow">FOCUS MODE</div><h2>One thing at a time.</h2><div class="clock" id="clock">00:25:00</div><p id="timerMessage">Choose a duration and begin.</p><div class="custom-time"><label for="customHours" class="muted">Hours</label><input id="customHours" type="number" min="0" max="24" value="0"><label for="customMinutes" class="muted">Minutes</label><input id="customMinutes" type="number" min="0" max="59" value="25"><label for="customSeconds" class="muted">Seconds</label><input id="customSeconds" type="number" min="0" max="59" value="0"><button class="btn secondary" id="setCustom">Set</button></div><div class="timer-actions"><button class="btn" id="startTimer">Start focus</button><button class="btn secondary" id="resetTimer">Reset</button></div></div></section>
-<section class="page" id="brain"><div class="card brain-intro"><div class="eyebrow">CLEAR YOUR MIND</div><h2>Tell me your plans. I'll help shape your schedule.</h2><p class="sub">Write everything down — school, work, errands, goals, deadlines, and all the little things. No need to organize it first.</p><div class="brain-area"><textarea id="brainInput" placeholder="For example: I have maths homework due Wednesday, need about an hour to study science, want to tidy my room, and I'd like to go for a walk tomorrow..."></textarea><div class="section-head" style="margin-top:12px"><span class="muted">Add as much or as little as you like.</span><button class="btn" id="organizeBtn">Organize my plans</button></div><p class="notice">This version turns your notes into editable schedule items. Choose a date and optional time for each one; approving the draft adds them to your calendar. AI-powered date and time suggestions need a secure backend connection.</p></div></div><div class="card section" id="draftCard" hidden><div class="section-head"><div><h2>Your draft plan</h2><p class="muted">Choose dates and times, then add the schedule to your calendar.</p></div><span class="pill">REVIEW FIRST</span></div><div id="draftList"></div><div class="section-head" style="margin-top:18px"><button class="btn secondary" id="clearDraft">Discard draft</button><button class="btn" id="approveDraft">Add schedule to calendar</button></div></div></section><footer>DELIVER · Less planning. More doing.</footer></main></div>
+<section class="page" id="brain"><div class="card brain-intro"><div class="eyebrow">CLEAR YOUR MIND</div><h2>Tell me your plans. I'll help shape your schedule.</h2><p class="sub">Write everything down — school, work, errands, goals, deadlines, and all the little things. No need to organize it first.</p><div class="brain-area"><textarea id="brainInput" placeholder="For example: I have maths homework due Wednesday, need about an hour to study science, want to tidy my room, and I'd like to go for a walk tomorrow..."></textarea><div class="section-head" style="margin-top:12px"><span class="muted">Add as much or as little as you like.</span><button class="btn" id="organizeBtn">Analyze &amp; add to calendar</button></div><p class="notice">DELIVER detects dates and times in your notes and adds the items straight to your calendar. If you do not mention a date, it uses today; if you do not mention a time, it saves the item as all-day.</p></div></div><div class="card section" id="draftCard" hidden><div class="section-head"><div><h2>Your draft plan</h2><p class="muted">Choose dates and times, then add the schedule to your calendar.</p></div><span class="pill">REVIEW FIRST</span></div><div id="draftList"></div><div class="section-head" style="margin-top:18px"><button class="btn secondary" id="clearDraft">Discard draft</button><button class="btn" id="approveDraft">Add schedule to calendar</button></div></div></section><footer>DELIVER · Less planning. More doing.</footer></main></div>
 <script>
 const $=id=>document.getElementById(id);const load=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))||fallback}catch{return fallback}};let tasks=load('deliver_tasks',[]),events=load('deliver_calendar_events',[]);
 function save(){localStorage.setItem('deliver_tasks',JSON.stringify(tasks));localStorage.setItem('deliver_calendar_events',JSON.stringify(events));render();renderCalendar()}
@@ -28,28 +28,28 @@ $('setCustom').addEventListener('click',()=>{const h=Number($('customHours').val
 function localDateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function inferredDate(text,base){
  const t=text.toLowerCase(),d=new Date(base.getFullYear(),base.getMonth(),base.getDate());
- if(/\\bday after tomorrow\\b/.test(t))d.setDate(d.getDate()+2);
- else if(/\\btomorrow\\b/.test(t))d.setDate(d.getDate()+1);
- else if(/\\btoday\\b/.test(t)){}
+ if(/\bday after tomorrow\b/.test(t))d.setDate(d.getDate()+2);
+ else if(/\btomorrow\b/.test(t))d.setDate(d.getDate()+1);
+ else if(/\btoday\b/.test(t)){}
  else {
-  const inDays=t.match(/\\bin\\s+(\\d+)\\s+days?\\b/);
+  const inDays=t.match(/\bin\s+(\d+)\s+days?\b/);
   if(inDays)d.setDate(d.getDate()+Number(inDays[1]));
   else {
    const months={january:0,february:1,march:2,april:3,may:4,june:5,july:6,august:7,september:8,october:9,november:10,december:11};
    const monthNames=Object.keys(months).join('|');
-   const explicit=t.match(new RegExp('\\\\b(\\\\d{1,2})(?:st|nd|rd|th)?\\\\s+(?:of\\\\s+)?('+monthNames+')(?:\\\\s+(\\\\d{4}))?\\\\b')) ||
-    t.match(new RegExp('\\\\b('+monthNames+')\\\\s+(\\\\d{1,2})(?:st|nd|rd|th)?(?:,?\\\\s+(\\\\d{4}))?\\\\b'));
+   const explicit=t.match(new RegExp('\\b(\\d{1,2})(?:st|nd|rd|th)?\\s+(?:of\\s+)?('+monthNames+')(?:\\s+(\\d{4}))?\\b')) ||
+    t.match(new RegExp('\\b('+monthNames+')\\s+(\\d{1,2})(?:st|nd|rd|th)?(?:,?\\s+(\\d{4}))?\\b'));
    if(explicit){
     const day=Number(explicit[1] in months?explicit[2]:explicit[1]);
     const month=months[explicit[1] in months?explicit[1]:explicit[2]];
-    let year=Number(explicit[3]||explicit[2]||base.getFullYear());
+    let year=Number(explicit[3]||base.getFullYear());
     if(!explicit[3] && explicit[1] in months)year=base.getFullYear();
     if(!explicit[3] && !(explicit[1] in months) && month<base.getMonth())year++;
     const candidate=new Date(year,month,day);
     if(candidate.getMonth()===month&&candidate.getDate()===day)return localDateKey(candidate);
    } else {
     const weekdays={sunday:0,monday:1,tuesday:2,wednesday:3,thursday:4,friday:5,saturday:6};
-    const wd=t.match(/\\b(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\\b/);
+    const wd=t.match(/\b(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/);
     if(wd){let delta=(weekdays[wd[1]]-d.getDay()+7)%7;if(delta===0)delta=7;d.setDate(d.getDate()+delta)}
    }
   }
@@ -58,18 +58,18 @@ function inferredDate(text,base){
 }
 function inferredTime(text){
  const t=text.toLowerCase();
- if(/\\bnoon\\b/.test(t))return '12:00';
- if(/\\bmidnight\\b/.test(t))return '00:00';
- let m=t.match(/\\b(?:at\\s*)?(\\d{1,2})(?::(\\d{2}))?\\s*(a\\.?m\\.?|p\\.?m\\.?)\\b/);
+ if(/\bnoon\b/.test(t))return '12:00';
+ if(/\bmidnight\b/.test(t))return '00:00';
+ let m=t.match(/\b(?:at\s*)?(\d{1,2})(?::(\d{2}))?\s*(a\.?m\.?|p\.?m\.?)\b/);
  if(m){let h=Number(m[1]),min=Number(m[2]||0);if(h>=1&&h<=12&&min<60){if(m[3].startsWith('p')&&h!==12)h+=12;if(m[3].startsWith('a')&&h===12)h=0;return String(h).padStart(2,'0')+':'+String(min).padStart(2,'0')}}
- m=t.match(/\\b(?:at\\s*)?(\\d{1,2}):(\\d{2})\\b/);
+ m=t.match(/\b(?:at\s*)?(\d{1,2}):(\d{2})\b/);
  if(m&&Number(m[1])<24&&Number(m[2])<60)return String(Number(m[1])).padStart(2,'0')+':'+m[2];
  return '';
 }
 $('organizeBtn').addEventListener('click',()=>{
  const raw=$('brainInput').value.trim();if(!raw){$('brainInput').focus();return}
  const base=new Date();
- const parts=raw.split(/\\n+|[;]+|(?<=[.!?])\\s+|,\\s*(?=[A-Z])/).map(s=>s.trim().replace(/^[-•*\\d.)\\s]+/,'')).filter(s=>s.length>2);
+ const parts=raw.split(/\n+|[;]+|(?<=[.!?])\s+|,\s*(?=[A-Z])/).map(s=>s.trim().replace(/^[-•*\d.)\s]+/,'')).filter(s=>s.length>2);
  const entries=(parts.length?parts:[raw]).map((description,i)=>({id:Date.now()+i+Math.random(),title:description,date:inferredDate(description,base),time:inferredTime(description)}));
  events.push(...entries);
  selectedCalendarDate=entries[0]?.date||localDateKey(base);
