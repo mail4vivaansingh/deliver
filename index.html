@@ -1,263 +1,30 @@
-
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DELIVER — Less planning. More doing.</title>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b0d0f"><title>DELIVER — Less planning. More doing.</title>
 <style>
-:root {
-  --bg:#0b0d0f; --panel:#121519; --panel2:#181d22;
-  --line:#252c32; --text:#f4f5f6; --muted:#929aa3;
-  --lime:#b5d66b; --purple:#8b78c8;
-}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font:15px Inter,system-ui,sans-serif}
-button,input{font:inherit}
-button{cursor:pointer}
-.app{display:flex;min-height:100vh}
-aside{width:230px;padding:28px 18px;border-right:1px solid var(--line);background:#0e1114}
-.logo{font-size:25px;font-weight:850;letter-spacing:3px;padding:5px 12px}
-.tag{color:var(--muted);font-size:11px;padding:5px 12px 30px}
-.nav{display:grid;gap:7px}
-.nav button{border:0;background:transparent;color:var(--muted);text-align:left;padding:12px;border-radius:9px}
-.nav button.active,.nav button:hover{background:var(--panel2);color:var(--text)}
-.nav button.active{border-left:3px solid var(--lime)}
-.sidebar-bottom{position:absolute;bottom:25px;color:var(--muted);font-size:12px;padding:0 12px}
-main{flex:1;padding:36px;max-width:1250px;margin:auto;width:100%}
-.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;gap:15px}
-.eyebrow{color:var(--lime);font-size:11px;letter-spacing:2px;text-transform:uppercase}
-h1{font-size:30px;margin:7px 0}
-.sub{color:var(--muted)}
-.date{color:var(--muted);font-size:13px}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:20px}
-.stat-label{color:var(--muted);font-size:13px}
-.stat{font-size:30px;font-weight:750;margin-top:12px}
-.stat small{font-size:13px;color:var(--lime);font-weight:500}
-.section{margin-top:25px}
-.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
-h2{font-size:17px;margin:0}
-.btn{border:0;background:var(--lime);color:#11170b;padding:10px 15px;border-radius:9px;font-weight:700}
-.btn.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
-.task-form{display:flex;gap:8px;margin-bottom:14px}
-input{background:var(--panel2);border:1px solid var(--line);color:var(--text);padding:12px;border-radius:9px;min-width:0}
-.task-form input{flex:1}
-.task{display:flex;align-items:center;gap:12px;padding:14px 3px;border-bottom:1px solid var(--line)}
-.task:last-child{border:0}
-.task input{accent-color:var(--lime);width:17px;height:17px}
-.task.done .task-name{text-decoration:line-through;color:var(--muted)}
-.task-name{flex:1}
-.delete{border:0;background:transparent;color:var(--muted);font-size:18px}
-.two{display:grid;grid-template-columns:1.4fr 1fr;gap:15px}
-.habit{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
-.habit:last-child{border:0}
-.habit button{background:var(--panel2);color:var(--lime);border:1px solid var(--line);border-radius:8px;padding:8px 12px}
-.progress{height:7px;background:var(--panel2);border-radius:20px;margin-top:14px;overflow:hidden}
-.progress div{height:100%;background:var(--lime);width:0%;transition:.2s}
-.timer{text-align:center;padding:24px 5px}
-.clock{font-size:55px;font-weight:750;letter-spacing:2px;margin:15px}
-.timer p{color:var(--muted)}
-.timer-actions{display:flex;justify-content:center;gap:8px}
-.page{display:none}.page.active{display:block}
-.empty{color:var(--muted);padding:20px 0}
-footer{text-align:center;color:#68717a;font-size:11px;margin-top:35px}
-@media(max-width:750px){
- .app{display:block}aside{width:100%;padding:15px;border-right:0;border-bottom:1px solid var(--line)}
- .logo{display:inline-block}.tag{display:none}
- .nav{display:flex;overflow:auto;margin-top:10px}.nav button{white-space:nowrap;padding:9px}
- .sidebar-bottom{display:none}main{padding:23px 16px}
- .grid{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}
- .top{align-items:flex-start;flex-direction:column}
-}
-</style>
-</head>
-<body>
-<div class="app">
-<aside>
-  <div class="logo">DELIVER.</div>
-  <div class="tag">LESS PLANNING. MORE DOING.</div>
-  <nav class="nav">
-    <button class="active" data-page="dashboard">◫ &nbsp; Dashboard</button>
-    <button data-page="tasks">☷ &nbsp; Tasks</button>
-    <button data-page="habits">✳ &nbsp; Habits</button>
-    <button data-page="focus">◷ &nbsp; Focus</button>
-  </nav>
-  <div class="sidebar-bottom">Make today count.</div>
-</aside>
-
-<main>
-  <div class="top">
-    <div>
-      <div class="eyebrow">YOUR SPACE. YOUR PACE.</div>
-      <h1 id="greeting">Welcome back.</h1>
-      <div class="sub">A little progress is still progress.</div>
-    </div>
-    <div class="date" id="today"></div>
-  </div>
-
-  <section class="page active" id="dashboard">
-    <div class="grid">
-      <div class="card"><div class="stat-label">Tasks completed</div><div class="stat" id="completedStat">0</div></div>
-      <div class="card"><div class="stat-label">Tasks remaining</div><div class="stat" id="remainingStat">0</div></div>
-      <div class="card"><div class="stat-label">Habits checked today</div><div class="stat" id="habitStat">0</div></div>
-    </div>
-    <div class="section two">
-      <div class="card">
-        <div class="section-head"><h2>Today's tasks</h2><button class="btn secondary" onclick="showPage('tasks')">View all</button></div>
-        <div id="dashboardTasks"></div>
-      </div>
-      <div class="card">
-        <h2>Daily progress</h2>
-        <div class="stat" id="progressText">0%</div>
-        <div class="progress"><div id="progressBar"></div></div>
-        <p class="sub">Keep moving at your own pace.</p>
-      </div>
-    </div>
-    <div class="section card">
-      <div class="section-head"><h2>Quick add</h2></div>
-      <form class="task-form" id="quickForm">
-        <input id="quickInput" placeholder="What's on your mind?" required>
-        <button class="btn">Add task</button>
-      </form>
-    </div>
-  </section>
-
-  <section class="page" id="tasks">
-    <div class="card">
-      <div class="section-head"><h2>Your tasks</h2></div>
-      <form class="task-form" id="taskForm">
-        <input id="taskInput" placeholder="Add a task..." required>
-        <button class="btn">Add</button>
-      </form>
-      <div id="taskList"></div>
-    </div>
-  </section>
-
-  <section class="page" id="habits">
-    <div class="card">
-      <div class="section-head"><h2>Daily habits</h2></div>
-      <p class="sub">Build consistency, one day at a time.</p>
-      <form class="task-form" id="habitForm">
-        <input id="habitInput" placeholder="Add a habit..." required>
-        <button class="btn">Add</button>
-      </form>
-      <div id="habitList"></div>
-    </div>
-  </section>
-
-  <section class="page" id="focus">
-    <div class="card timer">
-      <div class="eyebrow">FOCUS MODE</div>
-      <h2>One thing at a time.</h2>
-      <div class="clock" id="clock">25:00</div>
-      <p id="timerMessage">Ready when you are.</p>
-      <div class="timer-actions">
-        <button class="btn" id="startTimer">Start focus</button>
-        <button class="btn secondary" id="resetTimer">Reset</button>
-      </div>
-    </div>
-  </section>
-
-  <footer>DELIVER · Less planning. More doing.</footer>
-</main>
-</div>
-
+:root{--bg:#0b0d0f;--panel:#121519;--panel2:#181d22;--line:#252c32;--text:#f4f5f6;--muted:#929aa3;--lime:#b5d66b;--purple:#8b78c8}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px Inter,system-ui,sans-serif}button,input,textarea,select{font:inherit}button{cursor:pointer}.app{display:flex;min-height:100vh}aside{width:230px;padding:28px 18px;border-right:1px solid var(--line);background:#0e1114}.logo{font-size:25px;font-weight:850;letter-spacing:3px;padding:5px 12px}.tag{color:var(--muted);font-size:11px;padding:5px 12px 30px}.nav{display:grid;gap:7px}.nav button{border:0;background:transparent;color:var(--muted);text-align:left;padding:12px;border-radius:9px}.nav button.active,.nav button:hover{background:var(--panel2);color:var(--text)}.nav button.active{border-left:3px solid var(--lime)}.sidebar-bottom{position:absolute;bottom:25px;color:var(--muted);font-size:12px;padding:0 12px}main{flex:1;padding:36px;max-width:1250px;margin:auto;width:100%}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;gap:15px}.eyebrow{color:var(--lime);font-size:11px;letter-spacing:2px;text-transform:uppercase}h1{font-size:30px;margin:7px 0}h2{font-size:18px;margin:0 0 12px}.sub,.muted{color:var(--muted)}.date{color:var(--muted);font-size:13px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:20px}.stat-label{color:var(--muted);font-size:13px}.stat{font-size:30px;font-weight:750;margin-top:12px}.section{margin-top:25px}.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;gap:10px}.btn{border:0;background:var(--lime);color:#11170b;padding:10px 15px;border-radius:9px;font-weight:700}.btn.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line)}.btn:disabled{opacity:.5;cursor:not-allowed}.task-form{display:flex;gap:8px;margin-bottom:14px}input,textarea,select{background:var(--panel2);border:1px solid var(--line);color:var(--text);padding:12px;border-radius:9px;min-width:0}textarea{width:100%;min-height:155px;resize:vertical;line-height:1.55}.task-form input{flex:1}.task{display:flex;align-items:center;gap:12px;padding:14px 3px;border-bottom:1px solid var(--line)}.task:last-child{border:0}.task input{accent-color:var(--lime);width:17px;height:17px}.task.done .task-name{text-decoration:line-through;color:var(--muted)}.task-name{flex:1}.delete{border:0;background:transparent;color:var(--muted);font-size:18px}.two{display:grid;grid-template-columns:1.4fr 1fr;gap:15px}.habit{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}.habit button{background:var(--panel2);color:var(--lime);border:1px solid var(--line);border-radius:8px;padding:8px 12px}.progress{height:7px;background:var(--panel2);border-radius:20px;margin-top:14px;overflow:hidden}.progress div{height:100%;background:var(--lime);width:0%;transition:.2s}.page{display:none}.page.active{display:block}.empty{color:var(--muted);padding:20px 0}.timer{text-align:center;padding:28px 10px}.clock{font-size:58px;font-weight:750;letter-spacing:2px;margin:18px}.timer p{color:var(--muted)}.timer-actions,.presets{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}.presets{margin:20px auto}.presets button{background:var(--panel2);color:var(--text);border:1px solid var(--line);padding:8px 13px;border-radius:8px}.presets button.selected{border-color:var(--lime);color:var(--lime)}.custom-time{display:flex;justify-content:center;gap:8px;align-items:center;margin:14px}.custom-time input{width:95px}.brain-intro{max-width:760px}.brain-intro h2{font-size:25px;margin:8px 0}.brain-area{margin-top:20px}.draft-item{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}.draft-item input{accent-color:var(--lime)}.draft-item span{flex:1}.notice{font-size:12px;color:var(--muted);line-height:1.5;margin-top:12px}.pill{font-size:11px;color:var(--lime);border:1px solid #465331;border-radius:20px;padding:4px 8px}footer{text-align:center;color:#68717a;font-size:11px;margin-top:35px}@media(max-width:750px){.app{display:block}aside{width:100%;padding:15px;border-right:0;border-bottom:1px solid var(--line)}.logo{display:inline-block}.tag{display:none}.nav{display:flex;overflow:auto;margin-top:10px}.nav button{white-space:nowrap;padding:9px}.sidebar-bottom{display:none}main{padding:23px 16px}.grid{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}}
+</style></head><body><div class="app"><aside><div class="logo">DELIVER.</div><div class="tag">LESS PLANNING. MORE DOING.</div><nav class="nav"><button class="active" data-page="dashboard">◫ &nbsp; Dashboard</button><button data-page="tasks">☷ &nbsp; Tasks</button><button data-page="habits">✳ &nbsp; Habits</button><button data-page="focus">◷ &nbsp; Focus</button><button data-page="brain">✦ &nbsp; Brain Dump</button></nav><div class="sidebar-bottom">Make today count.</div></aside><main><div class="top"><div><div class="eyebrow">YOUR SPACE. YOUR PACE.</div><h1 id="greeting">Welcome back.</h1><div class="sub">A little progress is still progress.</div></div><div class="date" id="today"></div></div>
+<section class="page active" id="dashboard"><div class="grid"><div class="card"><div class="stat-label">Tasks completed</div><div class="stat" id="completedStat">0</div></div><div class="card"><div class="stat-label">Tasks remaining</div><div class="stat" id="remainingStat">0</div></div><div class="card"><div class="stat-label">Habits checked today</div><div class="stat" id="habitStat">0</div></div></div><div class="section two"><div class="card"><div class="section-head"><h2>Today's tasks</h2><button class="btn secondary" onclick="showPage('tasks')">View all</button></div><div id="dashboardTasks"></div></div><div class="card"><h2>Daily progress</h2><div class="stat" id="progressText">0%</div><div class="progress"><div id="progressBar"></div></div><p class="sub">Keep moving at your own pace.</p></div></div><div class="section card"><div class="section-head"><h2>Quick add</h2></div><form class="task-form" id="quickForm"><input id="quickInput" placeholder="What's on your mind?" required><button class="btn">Add task</button></form></div></section>
+<section class="page" id="tasks"><div class="card"><div class="section-head"><h2>Your tasks</h2></div><form class="task-form" id="taskForm"><input id="taskInput" placeholder="Add a task..." required><button class="btn">Add</button></form><div id="taskList"></div></div></section>
+<section class="page" id="habits"><div class="card"><h2>Daily habits</h2><p class="sub">Build consistency, one day at a time.</p><form class="task-form" id="habitForm"><input id="habitInput" placeholder="Add a habit..." required><button class="btn">Add</button></form><div id="habitList"></div></div></section>
+<section class="page" id="focus"><div class="card timer"><div class="eyebrow">FOCUS MODE</div><h2>One thing at a time.</h2><div class="clock" id="clock">25:00</div><p id="timerMessage">Choose a duration and begin.</p><div class="presets" id="presets"><button data-min="5" >5 min</button><button data-min="10" >10 min</button><button data-min="12" >12 min</button><button data-min="15" >15 min</button><button data-min="25" class="selected">25 min</button><button data-min="30" >30 min</button><button data-min="45" >45 min</button><button data-min="60" >60 min</button></div><div class="custom-time"><label for="customMinutes" class="muted">Custom minutes</label><input id="customMinutes" type="number" min="1" max="240" placeholder="e.g. 12"><button class="btn secondary" id="setCustom">Set</button></div><div class="timer-actions"><button class="btn" id="startTimer">Start focus</button><button class="btn secondary" id="resetTimer">Reset</button></div></div></section>
+<section class="page" id="brain"><div class="card brain-intro"><div class="eyebrow">CLEAR YOUR MIND</div><h2>Tell me your plans. I'll help shape your schedule.</h2><p class="sub">Write everything down — school, work, errands, goals, deadlines, habits, even the little things. No need to organize it first.</p><div class="brain-area"><textarea id="brainInput" placeholder="For example: I have maths homework due Wednesday, need about an hour to study science, want to tidy my room, and I'd like to go for a walk tomorrow..."></textarea><div class="section-head" style="margin-top:12px"><span class="muted">Add as much or as little as you like.</span><button class="btn" id="organizeBtn">Organize my plans</button></div><p class="notice">This first version creates an editable draft from your notes in your browser. It does not yet use a connected AI service, and it won't invent dates or schedule times.</p></div></div><div class="card section" id="draftCard" hidden><div class="section-head"><div><h2>Your draft plan</h2><p class="muted">Review these items before adding them to your tasks.</p></div><span class="pill">REVIEW FIRST</span></div><div id="draftList"></div><div class="section-head" style="margin-top:18px"><button class="btn secondary" id="clearDraft">Discard draft</button><button class="btn" id="approveDraft">Add selected to tasks</button></div></div></section><footer>DELIVER · Less planning. More doing.</footer></main></div>
 <script>
-const $ = id => document.getElementById(id);
-const load = (key, fallback) => {
-  try { return JSON.parse(localStorage.getItem(key)) || fallback; }
-  catch { return fallback; }
-};
-let tasks = load('deliver_tasks', []);
-let habits = load('deliver_habits', []);
-let checkedHabits = load('deliver_checked', {date:'', ids:[]});
-const todayKey = new Date().toLocaleDateString('en-CA');
-if (checkedHabits.date !== todayKey) checkedHabits = {date:todayKey,ids:[]};
-
-function save(){
-  localStorage.setItem('deliver_tasks',JSON.stringify(tasks));
-  localStorage.setItem('deliver_habits',JSON.stringify(habits));
-  localStorage.setItem('deliver_checked',JSON.stringify(checkedHabits));
-  render();
-}
-function showPage(id){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  $(id).classList.add('active');
-  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===id));
-}
+const $=id=>document.getElementById(id);const load=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))||fallback}catch{return fallback}};let tasks=load('deliver_tasks',[]),habits=load('deliver_habits',[]),checkedHabits=load('deliver_checked',{date:'',ids:[]});const todayKey=new Date().toLocaleDateString('en-CA');if(checkedHabits.date!==todayKey)checkedHabits={date:todayKey,ids:[]};
+function save(){localStorage.setItem('deliver_tasks',JSON.stringify(tasks));localStorage.setItem('deliver_habits',JSON.stringify(habits));localStorage.setItem('deliver_checked',JSON.stringify(checkedHabits));render()}
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));$(id).classList.add('active');document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===id))}
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
-function addTask(value){
-  if(!value.trim())return;
-  tasks.unshift({id:Date.now()+Math.random(),name:value.trim(),done:false});
-  save();
-}
-$('taskForm').addEventListener('submit',e=>{e.preventDefault();addTask($('taskInput').value);$('taskInput').value='';});
-$('quickForm').addEventListener('submit',e=>{e.preventDefault();addTask($('quickInput').value);$('quickInput').value='';});
-$('habitForm').addEventListener('submit',e=>{
-  e.preventDefault();
-  const value=$('habitInput').value.trim();
-  if(value)habits.push({id:Date.now()+Math.random(),name:value});
-  $('habitInput').value='';save();
-});
-function render(){
-  const completed=tasks.filter(t=>t.done).length;
-  const remaining=tasks.length-completed;
-  $('completedStat').textContent=completed;
-  $('remainingStat').textContent=remaining;
-  $('habitStat').textContent=checkedHabits.ids.length;
-  const pct=tasks.length?Math.round(completed/tasks.length*100):0;
-  $('progressText').textContent=pct+'%';
-  $('progressBar').style.width=pct+'%';
-  const taskHTML=(list)=>list.length?list.map(t=>`
-    <div class="task ${t.done?'done':''}">
-      <input type="checkbox" ${t.done?'checked':''} onchange="toggleTask(${JSON.stringify(t.id)})">
-      <span class="task-name">${escapeHTML(t.name)}</span>
-      <button class="delete" aria-label="Delete task" onclick="deleteTask(${JSON.stringify(t.id)})">×</button>
-    </div>`).join(''):'<div class="empty">Nothing here yet. Add your first task.</div>';
-  $('taskList').innerHTML=taskHTML(tasks);
-  $('dashboardTasks').innerHTML=taskHTML(tasks.slice(0,5));
-  $('habitList').innerHTML=habits.length?habits.map(h=>`
-    <div class="habit">
-      <span>${escapeHTML(h.name)}</span>
-      <button onclick="toggleHabit(${JSON.stringify(h.id)})">${checkedHabits.ids.includes(h.id)?'✓ Done':'Check in'}</button>
-    </div>`).join(''):'<div class="empty">Add a habit to get started.</div>';
-}
-function toggleTask(id){tasks=tasks.map(t=>t.id===id?{...t,done:!t.done}:t);save();}
-function deleteTask(id){tasks=tasks.filter(t=>t.id!==id);save();}
-function toggleHabit(id){
-  checkedHabits.ids=checkedHabits.ids.includes(id)?checkedHabits.ids.filter(x=>x!==id):[...checkedHabits.ids,id];
-  save();
-}
-function escapeHTML(s){
-  return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-const now=new Date();
-$('today').textContent=now.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-$('greeting').textContent=now.getHours()<12?'Good morning.':now.getHours()<18?'Good afternoon.':'Good evening.';
-render();
-
-let seconds=25*60, interval=null;
-function updateClock(){
-  $('clock').textContent=String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');
-}
-$('startTimer').addEventListener('click',()=>{
-  if(interval){clearInterval(interval);interval=null;$('startTimer').textContent='Resume';$('timerMessage').textContent='Paused. Take your time.';return;}
-  $('startTimer').textContent='Pause';
-  $('timerMessage').textContent='You are in focus mode.';
-  interval=setInterval(()=>{
-    seconds--;updateClock();
-    if(seconds<=0){
-      clearInterval(interval);interval=null;
-      $('startTimer').textContent='Start focus';
-      $('timerMessage').textContent='Focus session complete. Nice work!';
-    }
-  },1000);
-});
-$('resetTimer').addEventListener('click',()=>{
-  clearInterval(interval);interval=null;seconds=25*60;updateClock();
-  $('startTimer').textContent='Start focus';$('timerMessage').textContent='Ready when you are.';
-});
-</script>
-</body>
-</html>
+function addTask(value){if(!value.trim())return;tasks.unshift({id:Date.now()+Math.random(),name:value.trim(),done:false});save()}
+$('taskForm').addEventListener('submit',e=>{e.preventDefault();addTask($('taskInput').value);$('taskInput').value=''});$('quickForm').addEventListener('submit',e=>{e.preventDefault();addTask($('quickInput').value);$('quickInput').value=''});
+$('habitForm').addEventListener('submit',e=>{e.preventDefault();const v=$('habitInput').value.trim();if(v)habits.push({id:Date.now()+Math.random(),name:v});$('habitInput').value='';save()});
+function escapeHTML(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function render(){const done=tasks.filter(t=>t.done).length;$('completedStat').textContent=done;$('remainingStat').textContent=tasks.length-done;$('habitStat').textContent=checkedHabits.ids.length;const pct=tasks.length?Math.round(done/tasks.length*100):0;$('progressText').textContent=pct+'%';$('progressBar').style.width=pct+'%';const html=list=>list.length?list.map(t=>'<div class="task '+(t.done?'done':'')+'"><input type="checkbox" '+(t.done?'checked':'')+' onchange="toggleTask('+JSON.stringify(t.id)+')"><span class="task-name">'+escapeHTML(t.name)+'</span><button class="delete" aria-label="Delete task" onclick="deleteTask('+JSON.stringify(t.id)+')">×</button></div>').join(''):'<div class="empty">Nothing here yet. Add your first task.</div>';$('taskList').innerHTML=html(tasks);$('dashboardTasks').innerHTML=html(tasks.slice(0,5));$('habitList').innerHTML=habits.length?habits.map(h=>'<div class="habit"><span>'+escapeHTML(h.name)+'</span><button onclick="toggleHabit('+JSON.stringify(h.id)+')">'+(checkedHabits.ids.includes(h.id)?'✓ Done':'Check in')+'</button></div>').join(''):'<div class="empty">Add a habit to get started.</div>'}
+function toggleTask(id){tasks=tasks.map(t=>t.id===id?{...t,done:!t.done}:t);save()}function deleteTask(id){tasks=tasks.filter(t=>t.id!==id);save()}function toggleHabit(id){checkedHabits.ids=checkedHabits.ids.includes(id)?checkedHabits.ids.filter(x=>x!==id):[...checkedHabits.ids,id];save()}
+const now=new Date();$('today').textContent=now.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'});$('greeting').textContent=now.getHours()<12?'Good morning.':now.getHours()<18?'Good afternoon.':'Good evening.';render();
+// Flexible countdown: duration is selected before starting; interval is cleared on pause/reset.
+let selectedMinutes=25,remainingSeconds=selectedMinutes*60,interval=null;function paintClock(){$('clock').textContent=String(Math.floor(remainingSeconds/60)).padStart(2,'0')+':'+String(remainingSeconds%60).padStart(2,'0')}
+function chooseMinutes(n){if(!Number.isFinite(n)||n<1||n>240)return;$('timerMessage').textContent='Duration set to '+n+' minutes.';selectedMinutes=n;remainingSeconds=n*60;clearInterval(interval);interval=null;$('startTimer').textContent='Start focus';document.querySelectorAll('#presets button').forEach(b=>b.classList.toggle('selected',Number(b.dataset.min)===n));paintClock()}
+document.querySelectorAll('#presets button').forEach(b=>b.addEventListener('click',()=>chooseMinutes(Number(b.dataset.min))));$('setCustom').addEventListener('click',()=>{const n=Number($('customMinutes').value);if(!Number.isInteger(n)||n<1||n>240){$('timerMessage').textContent='Choose a whole number from 1 to 240 minutes.';return}chooseMinutes(n)});$('startTimer').addEventListener('click',()=>{if(interval){clearInterval(interval);interval=null;$('startTimer').textContent='Resume';$('timerMessage').textContent='Paused. Take your time.';return}if(remainingSeconds<=0)remainingSeconds=selectedMinutes*60;$('startTimer').textContent='Pause';$('timerMessage').textContent='You are in focus mode.';interval=setInterval(()=>{remainingSeconds--;paintClock();if(remainingSeconds<=0){clearInterval(interval);interval=null;$('startTimer').textContent='Start again';$('timerMessage').textContent='Focus session complete. Nice work!';try{if('Notification'in window&&Notification.permission==='granted')new Notification('DELIVER focus session complete')}catch(e){}}},1000)});$('resetTimer').addEventListener('click',()=>{clearInterval(interval);interval=null;remainingSeconds=selectedMinutes*60;paintClock();$('startTimer').textContent='Start focus';$('timerMessage').textContent='Timer reset.'});paintClock();
+// Brain dump draft: lightweight line/phrase capture only; no AI or invented due dates/times.
+let draft=[];$('organizeBtn').addEventListener('click',()=>{const raw=$('brainInput').value.trim();if(!raw){$('brainInput').focus();return}draft=raw.split(/\n+|(?<=[.!?])\s+(?=[A-Z0-9])/).map(s=>s.trim().replace(/^[-•*\d.)\s]+/, '')).filter(s=>s.length>2).map((name,i)=>({id:i,name,selected:true}));if(!draft.length)draft=[{id:0,name:raw,selected:true}];$('draftCard').hidden=false;$('draftList').innerHTML=draft.map(d=>'<label class="draft-item"><input type="checkbox" checked data-draft="'+d.id+'"><span>'+escapeHTML(d.name)+'</span></label>').join('');$('draftCard').scrollIntoView({behavior:'smooth',block:'start'})});
+$('approveDraft').addEventListener('click',()=>{const selected=[...$('draftList').querySelectorAll('input:checked')].map(x=>draft.find(d=>d.id===Number(x.dataset.draft))).filter(Boolean);selected.forEach(d=>tasks.unshift({id:Date.now()+Math.random(),name:d.name,done:false}));save();$('draftCard').hidden=true;$('brainInput').value='';draft=[];$('timerMessage').textContent='';showPage('tasks')});$('clearDraft').addEventListener('click',()=>{$('draftCard').hidden=true;draft=[]});
+</script></body></html>
