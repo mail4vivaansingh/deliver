@@ -98,7 +98,7 @@ function splitBrainDump(raw){
   const clauses=sentence.split(/,\s*|\s+and\s+/i).map(x=>x.trim()).filter(Boolean);
   for(const clause of clauses){
    const cleaned=clause.replace(/^(?:and|also|then|after lunch|after breakfast|in the morning|in the afternoon|in the evening)\s*/i,'').trim();
-   if(cleaned && isPlanFragment(cleaned))out.push(cleaned);
+   if(cleaned && (isPlanFragment(cleaned)||/\b(?:tomorrow|today|day after tomorrow|in \d+ days?|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i.test(cleaned)))out.push(cleaned);
   }
  }
  return out;
@@ -113,7 +113,7 @@ function renderDraft(){
 $('organizeBtn').addEventListener('click',()=>{
  const raw=$('brainInput').value.trim();if(!raw){$('brainInput').focus();return}
  const base=new Date();base.setHours(12,0,0,0);const items=splitBrainDump(raw);let activeDate=localDateKey(base);
- draft=items.map((part,i)=>{if(/\b(?:tomorrow|today|day after tomorrow|in \d+ days?|monday|tuesday|wednesday|thursday|friday|saturday|sunday|january|february|march|april|may|june|july|august|september|october|november|december)\b/i.test(part)||/\b\d{1,2}(?:st|nd|rd|th)?\s+(?:of\s+)?(?:january|february|march|april|may|june|july|august|september|october|november|december)\b/i.test(part))activeDate=dateForPhrase(part,base);return {id:Date.now()+i+Math.random(),title:shortTitle(part),date:activeDate,time:timeForPhrase(part)}}).filter(d=>d.title);
+ draft=items.map((part,i)=>{if(/\b(?:tomorrow|today|day after tomorrow|in \d+ days?|monday|tuesday|wednesday|thursday|friday|saturday|sunday|january|february|march|april|may|june|july|august|september|october|november|december)\b/i.test(part)||/\b\d{1,2}(?:st|nd|rd|th)?\s+(?:of\s+)?(?:january|february|march|april|may|june|july|august|september|october|november|december)\b/i.test(part))activeDate=dateForPhrase(part,base);return {id:Date.now()+i+Math.random(),title:isPlanFragment(part)?shortTitle(part):'',date:activeDate,time:timeForPhrase(part)}}).filter(d=>d.title);
  renderDraft();$('draftCard').scrollIntoView({behavior:'smooth',block:'start'});
 });
 $('approveDraft').addEventListener('click',()=>{
