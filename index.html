@@ -56,6 +56,22 @@ function inferredDate(text,base){
  }
  return localDateKey(d);
 }
+function conciseCalendarTitle(description){
+ let title=description.toLowerCase();
+ title=title.replace(/\\b(day after tomorrow|tomorrow|today)\\b/g,' ')
+  .replace(/\\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\\b/g,' ')
+  .replace(/\\b(january|february|march|april|may|june|july|august|september|october|november|december)\\s+\\d{1,2}(?:st|nd|rd|th)?\\b/g,' ')
+  .replace(/\\b\\d{1,2}(?:st|nd|rd|th)?\\s+(?:of\\s+)?(january|february|march|april|may|june|july|august|september|october|november|december)\\b/g,' ')
+  .replace(/\\b(?:at\\s*)?\\d{1,2}(?::\\d{2})?\\s*(?:a\\.?m\\.?|p\\.?m\\.?)\\b/g,' ')
+  .replace(/\\b\\d{1,2}:\\d{2}\\b/g,' ')
+  .replace(/\\b(my|the)\\b/g,' ')
+  .replace(/\\b(i have|i need to|i want to|need to|have to|remember to|please)\\b/g,' ')
+  .replace(/\\bsisters(?=\\s)/g,'sister')
+  .replace(/\\b([a-z]+)'s\\b/g,'$1')
+  .replace(/\\s+/g,' ').trim();
+ if(!title)title=description.trim();
+ return title.charAt(0).toUpperCase()+title.slice(1);
+}
 function inferredTime(text){
  const t=text.toLowerCase();
  if(/\bnoon\b/.test(t))return '12:00';
@@ -70,7 +86,7 @@ $('organizeBtn').addEventListener('click',()=>{
  const raw=$('brainInput').value.trim();if(!raw){$('brainInput').focus();return}
  const base=new Date();
  const parts=raw.split(/\n+|[;]+|(?<=[.!?])\s+|,\s*/).map(s=>s.trim().replace(/^[-•*\d.)\s]+/,'')).filter(s=>s.length>2);
- const entries=(parts.length?parts:[raw]).map((description,i)=>({id:Date.now()+i+Math.random(),title:description,date:inferredDate(description,base),time:inferredTime(description)}));
+ const entries=(parts.length?parts:[raw]).map((description,i)=>({id:Date.now()+i+Math.random(),title:conciseCalendarTitle(description),date:inferredDate(description,base),time:inferredTime(description)}));
  events.push(...entries);
  selectedCalendarDate=entries[0]?.date||localDateKey(base);
  calendarCursor=new Date(selectedCalendarDate+'T12:00:00');calendarCursor.setDate(1);
